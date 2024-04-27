@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meteorologická stanice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(rgb(193, 192, 192) 20%, Grey 80%) no-repeat center/cover fixed;
+        }
+
+        header {
+            color: darkgreen;
+            filter: blur(1px);
+            margin: 10px 15px 2px 15px;
+            text-align: center;
+        }
+
+        main {
+            padding: 2px 20px 10px 20px;
+        }
+
+        footer {
+            color: darkgreen;
+            padding: 5px;
+            font-size: large;
+            text-align: center;
+        }
+
+        #weather-container {
+            color: darkgreen;
+            border: 2px solid darkgreen;
+            border-radius: 5px;
+            background: none;
+            padding: 20px;
+            margin: 2px;
+            background-color: none;
+        }
+
+        #city-selector {
+            display: grid;
+            justify-content: space-around;
+            padding: 10px 4px 2px 4px;
+            text-align: center;
+        }
+
+        select {
+            color: darkgreen;
+            border: 1px solid darkgreen;
+            border-radius: none;
+            background: none;
+            outline: none;
+            padding: 8px;
+            font-size: large;
+        }
+
+        button {
+            background-color: darkgreen;
+            color: rgb(193, 192, 192);
+            border: none;
+            padding: 10px 20px;
+            margin: 10px 5px 10px 5px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 1s;
+        }
+
+        button:hover {
+            color: darkgreen;
+            border: 1px solid darkgreen;
+            background: none;
+        }
+
+        #weather-icon {
+            display: block;
+            color: darkgreen;
+            margin: 0 auto;
+            width: 100px;
+            height: 100px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        @keyframes rainAnimation {
+            0% {
+                transform: translateY(-100%);
+            }
+            100% {
+                transform: translateY(100%);
+            }
+        }
+
+        .rainy {
+            background-image: url('https://emojicdn.elk.sh/🌧');
+            animation: rainAnimation 1s infinite alternate;
+        }
+
+        @keyframes sunAnimation {
+            0% {
+                transform: scale(0.8);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(0.8);
+            }
+        }
+
+        .sunny {
+            background-image: url('https://emojicdn.elk.sh/🌞');
+            animation: sunAnimation 1s infinite alternate;
+        }
+
+        @media only screen and (max-width: 600px) {
+            header {
+                font-size: 1.5em;
+            }
+        }
+        .h2 {
+            text-align: center;
+            margin: 20px 5px 10px 5px;
+            color: darkgreen;
+            filter: blur(1px)
+        }
+        .allInput {
+            display: grid;
+            justify-content: space-around;
+            text-align: center;
+        }
+        #new-city-name, #new-city-temperature, #new-city-weather {
+            color: darkgreen;
+            text-align: center;
+            outline-color: darkgreen;
+            background: none;
+            padding: 5px 2px 5px 2px;
+            border: 1px solid darkgreen;
+            border-radius: 3px;
+            margin: 5px 2px 5px 2px;
+        }
+        .editBtn {
+            display: grid;
+            text-align: center;
+            color: grey;
+        }
+        #add-city-button {
+            margin-top:  20px;
+            cursor: cell;
+            
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Meteorologická stanice</h1>
+    </header>
+    <main>
+        <div id="weather-container">
+            <div id="weather-icon"></div>
+        </div>
+        <div id="city-selector">
+            <select id="city-select">
+                <option value="">Vyberte město</option>
+            </select>
+            <button id="update-button">Aktualizovat počasí</button>
+        </div>
+        <div id="add-city">
+            <h2 class="h2">Přidat nové město</h2>
+            <div class="allInput">
+                <input type="text" id="new-city-name" placeholder="Název města">
+                <input type="number" id="new-city-temperature" placeholder="Teplota (°C)">
+                <input type="text" id="new-city-weather" placeholder="Popis počasí">
+            </div>
+            <div class="editBtn">
+                <button id="add-city-button">Přidat město</button>
+        </div>
+            </div>
+    </main>
+    <footer>
+        <p>&copy; 2024 Meteorologická stanice</p>
+    </footer>
+    <script>
+        var cities = [
+            { name: "Praha", temperature: 15, weatherDescription: "Slunečno" },
+            { name: "Brno", temperature: 13, weatherDescription: "Oblačno" },
+            { name: "Ostrava", temperature: 12, weatherDescription: "Deštivo" }
+        ];
+
+        var citySelect = document.getElementById("city-select");
+        var updateButton = document.getElementById("update-button");
+        var weatherIcon = document.getElementById("weather-icon");
+        var addCityButton = document.getElementById("add-city-button");
+        var newCityNameInput = document.getElementById("new-city-name");
+        var newCityTemperatureInput = document.getElementById("new-city-temperature");
+        var newCityWeatherInput = document.getElementById("new-city-weather");
+
+        function populateCityDropdown() {
+            cities.forEach(function(city) {
+                var option = document.createElement("option");
+                option.value = city.name;
+                option.textContent = city.name;
+                citySelect.appendChild(option);
+            });
+        }
+
+        function displayWeather(cityName) {
+            var selectedCity = cities.find(function(city) {
+                return city.name === cityName;
+            });
+
+            var weatherContainer = document.getElementById("weather-container");
+            weatherContainer.innerHTML = "<h2>" + selectedCity.name + "</h2>" +
+                                           "<p>Teplota: " + selectedCity.temperature + " °C</p>" +
+                                           "<p>Počasí: " + selectedCity.weatherDescription + "</p>";
+
+            if (selectedCity.weatherDescription === "Deštivo") {
+                weatherIcon.classList.add("rainy");
+                weatherIcon.classList.remove("sunny");
+            } else {
+                weatherIcon.classList.add("sunny");
+                weatherIcon.classList.remove("rainy");
+            }
+        }
+
+        citySelect.addEventListener("change", function() {
+            var selectedCity = this.value;
+            displayWeather(selectedCity);
+        });
+
+        updateButton.addEventListener("click", function() {
+            var selectedCity = citySelect.value;
+            if (selectedCity) {
+                var updatedTemperature = Math.floor(Math.random() * (30 - 10 + 1)) + 10;
+                var updatedWeatherDescription = ["Slunečno", "Oblačno", "Deštivo"][Math.floor(Math.random() * 3)];
+                var updatedCity = cities.find(function(city) {
+                    return city.name === selectedCity;
+                });
+                updatedCity.temperature = updatedTemperature;
+                updatedCity.weatherDescription = updatedWeatherDescription;
+                displayWeather(selectedCity);
+            } else {
+                alert("Vyberte prosím město.");
+            }
+        });
+
+        addCityButton.addEventListener("click", function() {
+            var cityName = newCityNameInput.value;
+            var cityTemperature = parseInt(newCityTemperatureInput.value);
+            var cityWeather = newCityWeatherInput.value;
+            if (cityName && !isNaN(cityTemperature) && cityWeather) {
+                var newCity = { name: cityName, temperature: cityTemperature, weatherDescription: cityWeather };
+                cities.push(newCity);
+                var option = document.createElement("option");
+                option.value = cityName;
+                option.textContent = cityName;
+                citySelect.appendChild(option);
+                newCityNameInput.value = "";
+                newCityTemperatureInput.value = "";
+                newCityWeatherInput.value = "";
+            } else {
+                alert("Zadejte prosím platné informace o městě.");
+            }
+        });
+
+        populateCityDropdown();
+    </script>
+</body>
+</html>
